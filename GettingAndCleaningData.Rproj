@@ -1,13 +1,49 @@
-Version: 1.0
 
-RestoreWorkspace: Default
-SaveWorkspace: Default
-AlwaysSaveHistory: Default
 
-EnableCodeIndexing: Yes
-UseSpacesForTab: Yes
-NumSpacesForTab: 2
-Encoding: UTF-8
+setwd("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset")
 
-RnwWeave: Sweave
-LaTeX: pdfLaTeX
+
+features <- read.table("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset/features.txt")
+activities<- read.table("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset/activity_labels.txt")
+
+
+xtrain<- read.table("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset/train/X_train.txt")
+ytrain<- read.table("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset/train/y_train.txt")
+subjecttrain<- read.table("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset/train/subject_train.txt")
+
+
+
+xtest<- read.table("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset/test/X_test.txt")
+ytest<- read.table("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset/test/y_test.txt")
+subjecttest<- read.table("C:/Users/Dimitris/Desktop/R programming/R_Coursera/UCI HAR Dataset/test/subject_test.txt")
+
+
+
+colnames(xtrain) = features[,2]
+colnames(ytrain) = "activityId"
+colnames(subjecttrain) = "subjectId"
+colnames(xtest) = features[,2]
+colnames(ytest) = "activityId"
+colnames(subjecttest) = "subjectId"
+colnames(activities) <- c('activityId','activityType')
+
+
+
+X_data<- cbind(ytest,xtest,subjecttest)
+Y_data<- cbind(ytrain,xtrain,subjecttrain)
+dataset<- rbind(X_data,Y_data)
+
+
+
+
+colNames = colnames(dataset)
+mean_and_std = (grepl("activityId" , colNames) | grepl("subjectId" , colNames) | grepl("mean.." , colNames) | grepl("std.." , colNames))
+MeanAndStd <- dataset[ , mean_and_std == TRUE]
+setWithActivityNames = merge(MeanAndStd, activities, by='activityId', all.x=TRUE)
+
+
+tidydataset <- aggregate(. ~subjectId + activityId, setWithActivityNames, mean)
+tidydataset <- tidydataset[order(tidydataset$subjectId, tidydataset$activityId),]
+
+
+write.table(tidydataset, "tidydataset.txt", row.name=FALSE)
